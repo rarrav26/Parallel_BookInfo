@@ -50,8 +50,9 @@ internal class Program
                         notFoundISBNsInCache.Add(ISBN);
 
                 // Retrieve BookInfo from API for ISBNs not found in the cache
-                foreach (var bookFromAPI in await ConsumeBookApiAsync(notFoundISBNsInCache))
-                    booksCache.Add(bookFromAPI.ISBN, bookFromAPI);
+                if (notFoundISBNsInCache.Count > 0)
+                    foreach (var bookFromAPI in await ConsumeBookApiAsync(notFoundISBNsInCache))
+                        booksCache.Add(bookFromAPI.ISBN, bookFromAPI);
 
                 // Process each ISBN in the line
                 foreach (var ISBN in lineISBNs)
@@ -76,7 +77,7 @@ internal class Program
         Console.ReadKey();
     }
 
-    private static void WriteToCsv(string filePath, List<BookInfo> bookInfos)
+    private static void WriteToCsv(string filePath, ICollection<BookInfo> bookInfos)
     {
         // StringBuilder to construct CSV content
         var csvContent = new StringBuilder();
@@ -141,6 +142,9 @@ internal class Program
     {
         // List to store BookInfo objects retrieved from the API
         var booksInfo = new List<BookInfo>();
+
+        if (ISBNs.Count == 0)
+            return booksInfo;
 
         // API URL for fetching book information using ISBNs
         string apiUrl = $"https://openlibrary.org/api/books?bibkeys=ISBN:{string.Join(",ISBN:", ISBNs)}&jscmd=data&format=json";
